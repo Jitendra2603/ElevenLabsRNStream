@@ -1,0 +1,19 @@
+current directory: /Users/dusk/test/Eleven/vendor/bundle/ruby/3.2.0/gems/nkf-0.2.0/ext/nkf
+/Users/dusk/.rbenv/versions/3.2.0/bin/ruby -I /Users/dusk/.rbenv/versions/3.2.0/lib/ruby/3.2.0 extconf.rb
+creating Makefile
+
+current directory: /Users/dusk/test/Eleven/vendor/bundle/ruby/3.2.0/gems/nkf-0.2.0/ext/nkf
+make DESTDIR\= sitearchdir\=./.gem.20250531-73106-zatsfc sitelibdir\=./.gem.20250531-73106-zatsfc clean
+
+current directory: /Users/dusk/test/Eleven/vendor/bundle/ruby/3.2.0/gems/nkf-0.2.0/ext/nkf
+make DESTDIR\= sitearchdir\=./.gem.20250531-73106-zatsfc sitelibdir\=./.gem.20250531-73106-zatsfc
+compiling nkf.c
+linking shared-object nkf.bundle
+ld: warning: ignoring duplicate libraries: '-lruby.3.2'
+
+current directory: /Users/dusk/test/Eleven/vendor/bundle/ruby/3.2.0/gems/nkf-0.2.0/ext/nkf
+make DESTDIR\= sitearchdir\=./.gem.20250531-73106-zatsfc sitelibdir\=./.gem.20250531-73106-zatsfc install
+/usr/bin/install -c -m 0755 nkf.bundle ./.gem.20250531-73106-zatsfc
+
+current directory: /Users/dusk/test/Eleven/vendor/bundle/ruby/3.2.0/gems/nkf-0.2.0/ext/nkf
+make DESTDIR\= sitearchdir\=./.gem.20250531-73106-zatsfc sitelibdir\=./.gem.20250531-73106-zatsfc clean

@@ -1,134 +1,247 @@
-# ElevenLabs React Native Voice AI POC
+# 🎤 Eleven - ElevenLabs TTS Streaming App
 
-This project is a React Native Proof of Concept (POC) application that demonstrates:
-- Text-to-Speech (TTS) using the ElevenLabs API.
-- Streaming audio data from ElevenLabs.
-- Saving streamed audio to a local WAV file.
-- Playing back the local audio file.
-- A simple UI with a text input and a visual animation during audio playback.
+A React Native application that converts text to speech using the ElevenLabs API with real-time streaming playback and smooth visual animations.
 
-## Features
+## ✨ Features
 
-- **Text Input**: Users can type text into an auto-resizing input field.
-- **ElevenLabs TTS**: Converts the input text to speech using a specified voice from ElevenLabs.
-- **Audio Streaming & Saving**: Audio is streamed from ElevenLabs as PCM data, converted to a WAV file, and saved locally in the app's document directory.
-- **Audio Playback**: The saved WAV file is played back using `react-native-sound-player`.
-- **Playback Animation**: A visual animation (`PlayingAnimator` component) is displayed while audio is playing.
-- **Loading Indicator**: Shows an activity indicator during TTS generation and initial audio loading.
-- **Cross-Platform**: Designed for iOS and Android (though primary testing and troubleshooting has focused on iOS).
+- **Real-time TTS Streaming**: Converts text to speech with ElevenLabs API
+- **Smooth Audio Playback**: Uses `react-native-track-player` for reliable streaming
+- **Background Audio Support**: Continues playing when app is backgrounded
+- **Beautiful Animations**: Neon cyan pulsing animation during playback
+- **Chunk-based Streaming**: Intelligent buffering for seamless audio experience
+- **Auto-cleanup**: Smart memory management for optimal performance
 
-## High-Level Architecture
+## 🏗️ Architecture
 
-1.  **UI (`App.tsx`, `AutoResizingTextInput.tsx`):**
-    *   `App.tsx` is the main component, managing state for loading, audio playback, and user input.
-    *   `AutoResizingTextInput.tsx` provides the text input field and a send button.
-    *   `PlayingAnimator.tsx` displays a visual cue when audio is playing.
+```mermaid
+graph TD
+    A["🎯 User Input Text"] --> B["🌐 ElevenLabs API Stream"]
+    B --> C["📦 PCM Chunks Received"]
+    C --> D["🔄 Buffer Manager<br/>(128KB chunks)"]
+    D --> E["🎵 Audio Proxy<br/>PCM → WAV Conversion"]
+    E --> F["💾 File System<br/>WAV files"]
+    F --> G["🎶 TrackPlayer Queue"]
+    G --> H["🔊 Audio Playback"]
+    
+    I["📡 TrackPlayer Events"] --> J["🧹 Cleanup Manager"]
+    J --> K["🗑️ Remove Old Files"]
+    
+    subgraph "Streaming Pipeline"
+        D
+        E
+        F
+    end
+    
+    subgraph "Audio Management"
+        G
+        H
+        I
+    end
+    
+    subgraph "Memory Optimization"
+        J
+        K
+    end
+    
+    style A fill:#00DFFF,stroke:#333,stroke-width:2px
+    style H fill:#00DFFF,stroke:#333,stroke-width:2px
+    style G fill:#90EE90,stroke:#333,stroke-width:2px
+```
 
-2.  **TTS Service (`services/elevenLabs.ts`):
-    *   The `generateSpeech` function orchestrates the TTS process.
-    *   It makes a POST request to the ElevenLabs `/text-to-speech/{voice_id}/stream` endpoint.
-    *   The API key and voice ID are configured in `App.tsx` (currently hardcoded, should be moved to a config/env file for production).
-    *   **Streaming & File Handling:**
-        *   `RNFetchBlob` is used to stream the audio data from ElevenLabs and save it initially as a raw PCM file (`.pcm`).
-        *   A WAV header is pre-pended to a `.wav` file.
-        *   The PCM data is progressively read from the `.pcm` file and appended to the `.wav` file.
-        *   Once the stream is complete, the PCM file is fully appended to the WAV file, and the WAV header (RIFF size, data chunk size) is updated with the correct file sizes.
-        *   The temporary `.pcm` file is then deleted.
-    *   The function returns a promise that resolves with the local file path to the final `.wav` file.
+## 🚀 How It Works
 
-3.  **Audio Playback (`App.tsx` with `react-native-sound-player`):
-    *   When the `generateSpeech` function successfully returns the `wavPath`:
-        *   `App.tsx` constructs a `file:///` URL from the `wavPath`.
-        *   `SoundPlayer.playUrl(url)` is called to play the audio.
-    *   Event listeners (`FinishedLoadingURL`, `FinishedPlaying`) are attached to `SoundPlayer` to manage the `isAudioPlaying` state, which in turn controls the `PlayingAnimator` visibility and handles errors.
-    *   `SoundPlayer.stop()` is called before starting a new playback to prevent overlapping audio.
+### 1. **Text Processing**
+- User enters text in the auto-resizing input field
+- Text is sanitized and sent to ElevenLabs API for TTS generation
 
-## Setup & Running
+### 2. **Streaming Pipeline**
+- ElevenLabs API streams PCM audio data in real-time
+- PCM data is buffered into 128KB chunks (~4 seconds each)
+- Each chunk is converted to WAV format with proper headers
+- WAV files are saved to device storage for TrackPlayer consumption
 
-1.  **Prerequisites:**
-    *   Node.js (LTS version recommended)
-    *   Yarn or npm
-    *   React Native development environment set up (see [React Native Environment Setup](https://reactnative.dev/docs/environment-setup))
-    *   CocoaPods (for iOS)
-    *   An ElevenLabs API Key
+### 3. **Audio Playback**
+- TrackPlayer manages a queue of audio chunks
+- Playback starts after 3 chunks are buffered (12 seconds buffer)
+- Smooth transitions between chunks for continuous audio
+- Background playback support with media controls
 
-2.  **Installation:**
-    ```bash
-    git clone <your-repository-url>
-    cd <your-project-directory>
-    npm install
-    # or
-    yarn install
+### 4. **Memory Management**
+- Automatic cleanup of old audio files during playback
+- Progressive removal of chunks 3+ positions behind current track
+- Complete cleanup when playback ends
 
-    # For iOS, install pods
-    cd ios
-    pod install
-    cd ..
-    ```
+## 📱 Tech Stack
 
-3.  **Configuration:**
-    *   Open `App.tsx`.
-    *   Locate the `ELEVEN_API_KEY` constant.
-    *   Replace the placeholder string with your actual ElevenLabs API key.
-        ```javascript
-        const ELEVEN_API_KEY = 'YOUR_ELEVENLABS_API_KEY_HERE';
-        ```
-    *   You can also change the `VOICE_ID` if desired.
+- **React Native 0.79.2** - Cross-platform mobile framework
+- **TypeScript** - Type-safe development
+- **ElevenLabs API** - AI-powered text-to-speech
+- **react-native-track-player** - Professional audio playback
+- **react-native-blob-util** - File operations and HTTP streaming
+- **react-native-vector-icons** - UI icons
+- **Buffer** - Binary data manipulation
 
-4.  **Running the App:**
-    *   **iOS:**
-        ```bash
-        npx react-native run-ios
-        # Or open the .xcworkspace in Xcode and run from there.
-        ```
-    *   **Android:**
-        ```bash
-        npx react-native run-android
-        ```
+## 🔧 Technical Details
 
-## Key Dependencies
+### Audio Configuration
+- **Sample Rate**: 16kHz
+- **Channels**: Mono (1 channel)
+- **Bit Depth**: 16-bit
+- **Format**: PCM → WAV conversion
+- **Chunk Size**: 128KB (~4 seconds)
+- **Buffer**: 3 chunks (12 seconds)
 
-*   `react-native`: Core framework.
-*   `react-native-sound-player`: For playing audio files.
-*   `react-native-blob-util`: For network requests (streaming) and file system access (saving audio).
-*   `buffer`: Polyfill for Node.js Buffer API, used in `elevenLabs.ts` for manipulating WAV header data.
+### ElevenLabs API
+- **Endpoint**: `/v1/text-to-speech/{voice_id}/stream`
+- **Voice ID**: `JBFqnCBsd6RMkjVDRZzb`
+- **Model**: `eleven_flash_v2`
+- **Output Format**: `pcm_16000`
 
-## Code Structure
+### TrackPlayer Features
+- Background audio capability
+- Lock screen media controls
+- Automatic queue management
+- Platform-optimized performance
+
+## 🛠️ Setup Instructions
+
+### Prerequisites
+- Node.js (≥18)
+- React Native development environment
+- Xcode (for iOS)
+- Android Studio (for Android)
+
+### Installation
+
+1. **Clone the repository**
+```bash
+git clone https://github.com/yourusername/eleven-tts-app.git
+cd eleven-tts-app
+```
+
+2. **Install dependencies**
+```bash
+npm install
+```
+
+3. **iOS Setup**
+```bash
+cd ios && pod install && cd ..
+```
+
+4. **Configure ElevenLabs API**
+- Get your API key from [ElevenLabs](https://elevenlabs.io)
+- Update `ELEVEN_API_KEY` in `App.tsx`
+
+5. **Run the app**
+```bash
+# iOS
+npx react-native run-ios
+
+# Android
+npx react-native run-android
+```
+
+## 🔑 Environment Variables
+
+Create a `.env` file (optional):
+```env
+ELEVEN_API_KEY=your_elevenlabs_api_key_here
+VOICE_ID=JBFqnCBsd6RMkjVDRZzb
+```
+
+## 📁 Project Structure
 
 ```
-.Eleven/
-├── App.tsx                   # Main application component, UI logic, playback control
+Eleven/
+├── App.tsx                 # Main app component
+├── index.js               # App entry point with TrackPlayer service
 ├── components/
-│   ├── AutoResizingTextInput.tsx # Text input component
-│   └── PlayingAnimator.tsx     # Animation component for playback
+│   ├── AutoResizingTextInput.tsx
+│   └── PlayingAnimator.tsx
 ├── services/
-│   └── elevenLabs.ts         # ElevenLabs API interaction, audio streaming, WAV creation
-├── ios/                        # iOS native project
-├── android/                    # Android native project
-├── src/
-│   └── types/                  # TypeScript declaration files (e.g., for modules without native types)
-├── package.json
-└── README.md                   # This file
+│   ├── audioProxy.ts      # PCM to WAV conversion
+│   ├── elevenLabs.ts      # ElevenLabs API integration
+│   ├── streamingTts.ts    # Main streaming service
+│   ├── trackPlayerService.ts
+│   └── trackPlayerSetup.ts
+├── src/types/             # TypeScript declarations
+├── ios/                   # iOS native code
+└── android/               # Android native code
 ```
 
-## Notes & Potential Improvements
+## 🎨 UI Components
 
-*   **API Key Management**: The ElevenLabs API key is currently hardcoded. For a real application, this should be moved to a secure configuration file (e.g., `.env`) and not committed to version control.
-*   **Error Handling**: Error handling can be further improved, especially for network issues and API errors from ElevenLabs.
-*   **Advanced Animation**: The current `PlayingAnimator` is basic. 
-*   **Audio Format Configuration**: The output format (`pcm_16000`) is hardcoded. This could be made configurable.
-*   **Background Audio**: Current setup might not support background audio playback robustly without additional configuration (e.g., using a dedicated background audio library like `react-native-track-player`).
-*   **UI/UX**: The UI is minimalistic. Further enhancements could include message history, voice selection, etc.
-*   **TypeScript Declarations**: Some modules might require manual `.d.ts` files if they don't ship with their own types (e.g., `src/types/react-native-sound-player.d.ts` was created during development).
-*   **Streaming to Player Directly**: The current implementation saves the entire file then plays. True streaming (playing chunks as they arrive without saving the whole file first, or playing directly from the stream to the audio output) with `react-native-sound-player` might be complex or not fully supported. `react-native-track-player` might be better suited for advanced streaming and background audio.
+### PlayingAnimator
+- Multi-layered pulsing animation
+- Neon cyan theme (#00DFFF)
+- Core and glow effects
+- React Native Animated API
 
-## Troubleshooting History (Brief Overview)
+### AutoResizingTextInput
+- Dynamic height adjustment
+- Send button integration
+- Keyboard-aware interface
+- Styled with React Native StyleSheet
 
-During development, several issues were addressed:
-*   **Module Not Found (TypeScript):** For libraries like `react-native-vector-icons`, `react-native-blob-util`, `react-native-sound-player`, manual TypeScript declaration files (`.d.ts`) or `npm install @types/...` were needed.
-*   **iOS Build Failures (CocoaPods, Native Modules):** Issues with `react-native-reanimated` (related to New Architecture / `RCT_NEW_ARCH_ENABLED` flag) and `react-native-blob-util` (codegen issues) required version pinning, `pod deintegrate`, `pod install --repo-update`, and modifications to the `Podfile` to disable New Architecture for specific pods or globally.
-*   **NativeWind Styling:** Initial use of NativeWind for styling caused issues with `className` props when NativeWind was later removed/misconfigured. Styles were converted to `StyleSheet`.
-*   **Audio Playback Logic (`onReadyForPlayback`):** The initial implementation for `onReadyForPlayback` in `elevenLabs.ts` was too optimistic for short audio files. It was simplified to call `SoundPlayer.playUrl` only after the entire WAV file is generated and saved, ensuring reliability.
-*   **`react-native-sound-player` Event Handling:** Ensured correct event listeners are used and `setIsAudioPlaying` is toggled appropriately.
+## 🔧 Performance Optimizations
 
-This README should provide a good starting point for understanding and working with the project.
+1. **Chunked Streaming**: 128KB chunks prevent memory buildup
+2. **Progressive Cleanup**: Removes old files during playback
+3. **Smart Buffering**: 3-chunk buffer prevents audio gaps
+4. **File-based Playback**: Reliable than in-memory streaming
+5. **Background Processing**: Non-blocking audio operations
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+**White Noise in Audio**
+- Check PCM data integrity
+- Verify WAV header generation
+- Ensure proper chunk alignment
+
+**Playback Stops Early**
+- Check TrackPlayer queue status
+- Verify chunk file creation
+- Monitor cleanup timing
+
+**Memory Issues**
+- Check file cleanup process
+- Monitor temp directory size
+- Verify chunk removal logic
+
+### Debug Logs
+Enable detailed logging by checking console output:
+```javascript
+console.log('Buffer size:', bufferSize);
+console.log('Created WAV:', wavSize);
+console.log('Queue length:', queueLength);
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- [ElevenLabs](https://elevenlabs.io) for the amazing TTS API
+- [react-native-track-player](https://github.com/doublesymmetry/react-native-track-player) team
+- React Native community for excellent tooling
+
+## 📧 Contact
+
+- **GitHub**: [@yourusername](https://github.com/yourusername)
+- **Email**: your.email@example.com
+
+---
+
+**Built with ❤️ using React Native and ElevenLabs AI**

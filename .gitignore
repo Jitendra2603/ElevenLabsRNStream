@@ -20,7 +20,7 @@ DerivedData
 *.hmap
 *.ipa
 *.xcuserstate
-**/.xcode.env.local
+ios/.xcode.env.local
 
 # Android/IntelliJ
 #
@@ -33,7 +33,6 @@ local.properties
 .cxx/
 *.keystore
 !debug.keystore
-.kotlin/
 
 # node.js
 #
@@ -41,10 +40,67 @@ node_modules/
 npm-debug.log
 yarn-error.log
 
-# fastlane
+# Bundle artifacts
+*.jsbundle
+
+# CocoaPods
+/ios/Pods/
+
+# Temporary files created by Metro
+.metro-health-check*
+
+# Flipper
+ios/Pods/Flipper
+ios/Pods/Flipper-*
+ios/Pods/FlipperKit
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Expo
+.expo/
+web-build/
+
+# @generated expo/ngrok-4.4.0-beta.1.tgz
+# Logs
+logs
+*.log
+
+# Temporary folders
+tmp/
+temp/
+
+# Editor directories and files
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# React Native
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Watchman
+.watchmanconfig
+
+# Buck
+buck-out/
+\.buckd/
+*.keystore
+
+# Fastlane
 #
-# It is recommended to not store the screenshots in the git repo. Instead, use fastlane to re-generate the
-# screenshots whenever they are needed.
+# It is recommended to not store the screenshots in the git repo. Instead, use fastlane
+# to re-generate the screenshots whenever they are needed.
 # For more information about the recommended setup visit:
 # https://docs.fastlane.tools/best-practices/source-control/
 
@@ -53,23 +109,10 @@ yarn-error.log
 **/fastlane/screenshots
 **/fastlane/test_output
 
-# Bundle artifact
-*.jsbundle
+# Generated files
+ios/Eleven.xcodeproj/xcuserdata/
+ios/Eleven.xcworkspace/xcuserdata/
+android/app/build/
 
-# Ruby / CocoaPods
-**/Pods/
-/vendor/bundle/
-
-# Temporary files created by Metro to check the health of the file watcher
-.metro-health-check*
-
-# testing
-/coverage
-
-# Yarn
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/sdks
-!.yarn/versions
+# API Keys
+config/apiKeys.ts
