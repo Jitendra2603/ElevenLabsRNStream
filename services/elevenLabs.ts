@@ -29,7 +29,7 @@ export async function generateSpeech({
 }: GenerateSpeechParams): Promise<void> {
   if (!text.trim()) throw new Error('Text is empty');
   if (!voiceId) throw new Error('voiceId required');
-  if (!apiKey) throw new Error('ElevenLabs apiKey required');
+  //if (!apiKey) throw new Error('ElevenLabs apiKey required');
 
   const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream?output_format=${outputFormat}`;
   const body = JSON.stringify({ text: sanitize(text), model_id: modelId });

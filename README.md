@@ -56,13 +56,13 @@ graph TD
 
 ### 2. **Streaming Pipeline**
 - ElevenLabs API streams PCM audio data in real-time
-- PCM data is buffered into 128KB chunks (~4 seconds each)
+- PCM data is buffered into 64KB chunks (~2 seconds each)
 - Each chunk is converted to WAV format with proper headers
 - WAV files are saved to device storage for TrackPlayer consumption
 
 ### 3. **Audio Playback**
 - TrackPlayer manages a queue of audio chunks
-- Playback starts after 3 chunks are buffered (12 seconds buffer)
+- Playback starts after 1 chunk is ready (~2 seconds for first response)
 - Smooth transitions between chunks for continuous audio
 - Background playback support with media controls
 
@@ -88,8 +88,8 @@ graph TD
 - **Channels**: Mono (1 channel)
 - **Bit Depth**: 16-bit
 - **Format**: PCM → WAV conversion
-- **Chunk Size**: 128KB (~4 seconds)
-- **Buffer**: 3 chunks (12 seconds)
+- **Chunk Size**: 64KB (~2 seconds)
+- **Buffer**: 1 chunk minimum (2 seconds for first response)
 
 ### ElevenLabs API
 - **Endpoint**: `/v1/text-to-speech/{voice_id}/stream`
@@ -186,9 +186,9 @@ Eleven/
 
 ## Performance Optimizations
 
-1. **Chunked Streaming**: 128KB chunks prevent memory buildup
+1. **Chunked Streaming**: 64KB chunks for fast response and memory efficiency
 2. **Progressive Cleanup**: Removes old files during playback
-3. **Smart Buffering**: 3-chunk buffer prevents audio gaps
+3. **Smart Buffering**: Minimal 1-chunk buffer for fast response
 4. **File-based Playback**: Reliable than in-memory streaming
 5. **Background Processing**: Non-blocking audio operations
 

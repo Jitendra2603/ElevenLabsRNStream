@@ -18,7 +18,7 @@ class StreamingTtsService {
   private audioQueue: string[] = [];
   private currentTrackIndex = 0;
   private pcmBuffer: Buffer = Buffer.alloc(0);
-  private readonly chunkSize = 128 * 1024; // 128KB chunks (~4 seconds at 16kHz)
+  private readonly chunkSize = 64 * 1024; // 64KB chunks (~2 seconds at 16kHz)
 
   async startStreaming(options: StreamingTtsOptions): Promise<void> {
     const { text, voiceId, apiKey, onPlaybackStart, onPlaybackEnd, onError } = options;
@@ -88,9 +88,9 @@ class StreamingTtsService {
       
       await this.createAndAddChunk(chunkToProcess);
       
-      // Start playback after we have 3 chunks buffered (better buffering)
-      if (this.audioQueue.length === 3 && this.currentTrackIndex === 0) {
-        console.log('Starting playback with 3 chunks buffered');
+      // Start playback after we have 1 chunk buffered (faster response)
+      if (this.audioQueue.length === 1 && this.currentTrackIndex === 0) {
+        console.log('Starting playback with 1 chunk buffered');
         await TrackPlayer.play();
         onPlaybackStart?.();
       }
@@ -131,12 +131,12 @@ class StreamingTtsService {
         const playbackState = await TrackPlayer.getPlaybackState();
         
         // Only cleanup old tracks, not the entire queue
-        if (currentTrack !== null && queue.length > 3) {
+        if (currentTrack !== null && queue.length > 2) {
           const currentIndex = queue.findIndex(track => track.id === currentTrack);
           
-          // Clean up tracks that are no longer needed (3 tracks behind current)
-          if (currentIndex > 3) {
-            const tracksToRemove = queue.slice(0, currentIndex - 2);
+          // Clean up tracks that are no longer needed (2 tracks behind current)
+          if (currentIndex > 1) {
+            const tracksToRemove = queue.slice(0, currentIndex - 1);
             for (const track of tracksToRemove) {
               await audioProxy.cleanupChunk(track.id!);
               await TrackPlayer.remove(track.id!);
