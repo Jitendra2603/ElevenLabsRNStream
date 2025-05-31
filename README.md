@@ -115,8 +115,8 @@ graph TD
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/yourusername/eleven-tts-app.git
-cd eleven-tts-app
+git clone https://github.com/Jitendra2603/ElevenLabsRNStream.git
+cd ElevenLabsRNStream
 ```
 
 2. **Install dependencies**
@@ -239,8 +239,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📧 Contact
 
-- **GitHub**: [@yourusername](https://github.com/yourusername)
-- **Email**: your.email@example.com
+- **GitHub**: [@Jitendra2603](https://github.com/Jitendra2603)
+- **Repository**: [ElevenLabsRNStream](https://github.com/Jitendra2603/ElevenLabsRNStream)
 
 ---
 
