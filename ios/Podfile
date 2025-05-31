@@ -1,9 +1,11 @@
 # Resolve react_native_pods.rb with node to allow for hoisting
+ENV['RCT_NEW_ARCH_ENABLED'] = '0'   # <-- force old architecture
 require Pod::Executable.execute_command('node', ['-p',
   'require.resolve(
     "react-native/scripts/react_native_pods.rb",
     {paths: [process.argv[1]]},
   )', __dir__]).strip
+require_relative '../node_modules/react-native/scripts/react_native_pods'
 
 platform :ios, min_ios_version_supported
 prepare_react_native_project!
@@ -24,6 +26,11 @@ target 'Eleven' do
   )
 
   post_install do |installer|
+    installer.pods_project.targets.each do |t|
+      t.build_configurations.each do |config|
+        config.build_settings['RCT_NEW_ARCH_ENABLED'] = 'NO'
+      end
+    end
     # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
     react_native_post_install(
       installer,

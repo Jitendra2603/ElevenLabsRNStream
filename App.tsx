@@ -5,127 +5,178 @@
  * @format
  */
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
+  SafeAreaView,
+  Alert,
+  KeyboardAvoidingView,
+  TouchableWithoutFeedback,
+  Keyboard,
   View,
+  Platform,
+  StatusBar,
+  ActivityIndicator,
+  StyleSheet,
+  EmitterSubscription,
 } from 'react-native';
+import AutoResizingInput from './components/AutoResizingTextInput';
+import PlayingAnimator from './components/PlayingAnimator';
+import { generateSpeech } from './services/elevenLabs';
+import SoundPlayer from 'react-native-sound-player';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+// No specific category API; iOS uses AVAudioSession by default.
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
+const ELEVEN_API_KEY = ''; // TEMP hardcoded
+const VOICE_ID = 'JBFqnCBsd6RMkjVDRZzb'; // Default voice
 
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+export default function App() {
+  const [loading, setLoading] = useState(false);
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+  const finishedPlayingSubscription = useRef<EmitterSubscription | null>(null);
+  const finishedLoadingURLSubscription = useRef<EmitterSubscription | null>(null);
+  const finishedLoadingFileSubscription = useRef<EmitterSubscription | null>(null);
+
+  useEffect(() => {
+    console.log('Setting up SoundPlayer event listeners...');
+
+    finishedPlayingSubscription.current = SoundPlayer.addEventListener('FinishedPlaying', (event: { success?: boolean, error?: any }) => {
+      console.log('SoundPlayer Event: FinishedPlaying', event);
+      setIsAudioPlaying(false);
+      if (event.error) {
+        Alert.alert('Playback Error', `FinishedPlaying reported an error: ${JSON.stringify(event.error)}`);
+      }
+    });
+
+    finishedLoadingURLSubscription.current = SoundPlayer.addEventListener('FinishedLoadingURL', (event: { success?: boolean, url?: string, error?: any }) => {
+      console.log('SoundPlayer Event: FinishedLoadingURL', event);
+      if (event.success && event.url) {
+        console.log('Finished loading URL, playback should start automatically by the library for URL:', event.url);
+        setIsAudioPlaying(true);
+      } else {
+        console.error('Failed to load URL for playback', event);
+        setIsAudioPlaying(false);
+        Alert.alert('Playback Error', `Could not load audio for playback. URL: ${event.url}, Error: ${JSON.stringify(event.error)}`);
+      }
+    });
+
+    finishedLoadingFileSubscription.current = SoundPlayer.addEventListener('FinishedLoadingFile', (event: { success?: boolean, path?: string, error?: any }) => {
+      console.log('SoundPlayer Event: FinishedLoadingFile', event);
+       if (event.success && event.path) {
+        console.log('Finished loading file, playback should start automatically by the library for path:', event.path);
+        setIsAudioPlaying(true);
+      } else {
+        console.error('Failed to load file for playback', event);
+        setIsAudioPlaying(false);
+        Alert.alert('Playback Error', `Could not load audio file for playback. Path: ${event.path}, Error: ${JSON.stringify(event.error)}`);
+      }
+    });
+
+    return () => {
+      console.log('Removing SoundPlayer event listeners...');
+      finishedPlayingSubscription.current?.remove();
+      finishedLoadingURLSubscription.current?.remove();
+      finishedLoadingFileSubscription.current?.remove();
+    };
+  }, []);
+
+  const handleSpeak = async (text: string) => {
+    if (!text.trim()) {
+      Alert.alert('Input required', 'Please enter some text to speak.');
+      return;
+    }
+    Keyboard.dismiss();
+    setLoading(true);
+    try {
+      console.log('Requesting speech for:', text);
+      // Stop any currently playing audio before starting a new one
+      try {
+        SoundPlayer.stop();
+      } catch (e) {
+        /* ignore */
+      }
+
+      const filePath = await generateSpeech({
+        text,
+        voiceId: VOICE_ID,
+        apiKey: ELEVEN_API_KEY,
+      });
+      console.log('TTS saved at:', filePath);
+
+      const url = filePath.startsWith('file://') ? filePath : `file://${filePath}`;
+      console.log('Playing final audio file:', url);
+      SoundPlayer.playUrl(url);
+      setIsAudioPlaying(true);
+
+    } catch (error) {
+      console.error('TTS Generation/Playback Error:', error);
+      setIsAudioPlaying(false);
+      Alert.alert('Error', 'Failed to generate or play speech. Please check your API key and network.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  /*
-   * To keep the template simple and small we're adding padding to prevent view
-   * from rendering under the System UI.
-   * For bigger apps the recommendation is to use `react-native-safe-area-context`:
-   * https://github.com/AppAndFlow/react-native-safe-area-context
-   *
-   * You can read more about it here:
-   * https://github.com/react-native-community/discussions-and-proposals/discussions/827
-   */
-  const safePadding = '5%';
-
   return (
-    <View style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        style={backgroundStyle}>
-        <View style={{paddingRight: safePadding}}>
-          <Header/>
-        </View>
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-            paddingHorizontal: safePadding,
-            paddingBottom: safePadding,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </View>
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle={Platform.OS === 'ios' ? 'light-content' : 'dark-content'} backgroundColor="#000000" />
+      <KeyboardAvoidingView
+        style={styles.keyboardAvoiding}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        enabled
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} style={styles.flexOne}>
+          <View style={styles.appContainer}>
+            <View style={styles.animationContainer}>
+              <PlayingAnimator isPlaying={isAudioPlaying} />
+            </View>
+
+            {loading && (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#FFFFFF" />
+              </View>
+            )}
+            <AutoResizingInput onSend={handleSpeak} placeholder="Type to speak..." />
+          </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#000000',
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
+  keyboardAvoiding: {
+    flex: 1,
+    backgroundColor: '#000000',
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
+  flexOne: {
+    flex: 1,
   },
-  highlight: {
-    fontWeight: '700',
+  appContainer: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: '#000000',
+  },
+  animationContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingContainer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    zIndex: 1,
   },
 });
-
-export default App;
