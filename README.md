@@ -1,8 +1,8 @@
-# 🎤 Eleven - ElevenLabs TTS Streaming App
+# Eleven - ElevenLabs TTS Streaming App
 
 A React Native application that converts text to speech using the ElevenLabs API with real-time streaming playback and smooth visual animations.
 
-## ✨ Features
+## Features
 
 - **Real-time TTS Streaming**: Converts text to speech with ElevenLabs API
 - **Smooth Audio Playback**: Uses `react-native-track-player` for reliable streaming
@@ -11,7 +11,7 @@ A React Native application that converts text to speech using the ElevenLabs API
 - **Chunk-based Streaming**: Intelligent buffering for seamless audio experience
 - **Auto-cleanup**: Smart memory management for optimal performance
 
-## 🏗️ Architecture
+## Architecture
 
 ```mermaid
 graph TD
@@ -48,7 +48,7 @@ graph TD
     style G fill:#90EE90,stroke:#333,stroke-width:2px
 ```
 
-## 🚀 How It Works
+## How It Works
 
 ### 1. **Text Processing**
 - User enters text in the auto-resizing input field
@@ -71,7 +71,7 @@ graph TD
 - Progressive removal of chunks 3+ positions behind current track
 - Complete cleanup when playback ends
 
-## 📱 Tech Stack
+## Tech Stack
 
 - **React Native 0.79.2** - Cross-platform mobile framework
 - **TypeScript** - Type-safe development
@@ -81,7 +81,7 @@ graph TD
 - **react-native-vector-icons** - UI icons
 - **Buffer** - Binary data manipulation
 
-## 🔧 Technical Details
+## Technical Details
 
 ### Audio Configuration
 - **Sample Rate**: 16kHz
@@ -103,7 +103,7 @@ graph TD
 - Automatic queue management
 - Platform-optimized performance
 
-## 🛠️ Setup Instructions
+## Setup Instructions
 
 ### Prerequisites
 - Node.js (≥18)
@@ -142,15 +142,15 @@ npx react-native run-ios
 npx react-native run-android
 ```
 
-## 🔑 Environment Variables
+## Environment Variables
 
-Create a `.env` file (optional):
+Create a `.env` file (optional, ideally you would have a proper server and not embed keys in app):
 ```env
 ELEVEN_API_KEY=your_elevenlabs_api_key_here
 VOICE_ID=JBFqnCBsd6RMkjVDRZzb
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 Eleven/
@@ -170,7 +170,7 @@ Eleven/
 └── android/               # Android native code
 ```
 
-## 🎨 UI Components
+## UI Components
 
 ### PlayingAnimator
 - Multi-layered pulsing animation
@@ -184,7 +184,7 @@ Eleven/
 - Keyboard-aware interface
 - Styled with React Native StyleSheet
 
-## 🔧 Performance Optimizations
+## Performance Optimizations
 
 1. **Chunked Streaming**: 128KB chunks prevent memory buildup
 2. **Progressive Cleanup**: Removes old files during playback
@@ -192,7 +192,7 @@ Eleven/
 4. **File-based Playback**: Reliable than in-memory streaming
 5. **Background Processing**: Non-blocking audio operations
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -219,7 +219,7 @@ console.log('Created WAV:', wavSize);
 console.log('Queue length:', queueLength);
 ```
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
@@ -227,17 +227,17 @@ console.log('Queue length:', queueLength);
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - [ElevenLabs](https://elevenlabs.io) for the amazing TTS API
 - [react-native-track-player](https://github.com/doublesymmetry/react-native-track-player) team
 - React Native community for excellent tooling
 
-## 📧 Contact
+## Contact
 
 - **GitHub**: [@Jitendra2603](https://github.com/Jitendra2603)
 - **Repository**: [ElevenLabsRNStream](https://github.com/Jitendra2603/ElevenLabsRNStream)
